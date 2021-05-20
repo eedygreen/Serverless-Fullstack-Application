@@ -1,0 +1,79 @@
+{
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Security Audit for Infrastructure",
+          "version": "1.0.0-scan",
+          "fullName": "Security Audit for Infrastructure"
+        }
+      },
+      "conversion": {
+        "tool": {
+          "driver": {
+            "name": "@ShiftLeft/sast-scan"
+          }
+        },
+        "invocation": {
+          "arguments": [
+            "-s",
+            "--framework",
+            "serverless",
+            "--quiet",
+            "--no-guide",
+            "-o",
+            "json",
+            "-d",
+            "/app"
+          ],
+          "executionSuccessful": true,
+          "commandLine": "-s --framework serverless --quiet --no-guide -o json -d /app",
+          "endTimeUtc": "2021-05-17T09:11:38Z",
+          "workingDirectory": {
+            "uri": "file:///home/eedy/Documents/Serverless-Fullstack-Application"
+          }
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "endTimeUtc": "2021-05-17T09:11:38Z",
+          "workingDirectory": {
+            "uri": "file:///home/eedy/Documents/Serverless-Fullstack-Application"
+          }
+        }
+      ],
+      "properties": {
+        "metrics": {
+          "total": 0,
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        }
+      },
+      "results": [],
+      "automationDetails": {
+        "description": {
+          "text": "Static Analysis Security Test results using @ShiftLeft/sast-scan"
+        },
+        "guid": "6bea0f62-817c-473f-84c3-67a6108d22d3"
+      },
+      "versionControlProvenance": [
+        {
+          "branch": "master",
+          "repositoryUri": "https://github.com/eedygreen/Serverless-Fullstack-Application",
+          "revisionId": "4ca7505c4b2f8b67f537457d9293442ac3277762"
+        }
+      ]
+    }
+  ],
+  "version": "2.1.0",
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "inlineExternalProperties": [
+    {
+      "guid": "6bea0f62-817c-473f-84c3-67a6108d22d3",
+      "runGuid": "52eb957c-db0b-4cc6-b376-67290dca3d1f"
+    }
+  ]
+}

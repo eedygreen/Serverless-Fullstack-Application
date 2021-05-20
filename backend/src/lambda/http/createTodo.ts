@@ -7,7 +7,7 @@ import { getUserId } from '../utils'
 
 const docClient = new AWS.DynamoDB.DocumentClient()
 const todoTable = process.env.TODOS_TABLE
-const name = process.env.Todo_Name
+
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
@@ -21,7 +21,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     createdAt,
     todoId,
     done: false,
-    attachmentUrl: `https://${bucketName}.s3.amazonaws.com/${attachemntId}`,
     ...newTodo,
   }
 
