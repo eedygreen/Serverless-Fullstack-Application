@@ -44,6 +44,8 @@ custom:
     packagerOptions:
       scripts:
         - rm -rf node_modules/aws-sdk
+        - export NODE_OPTIONS=--max_old_space_size=4096
+    
   documentation:
     api:
       info:
@@ -194,7 +196,7 @@ resources:
         ValidateRequestParameters: false
       
     TodoTable:
-      Type: AWS::ADynamoDB::Table
+      Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
           - AttributeName: userId
@@ -215,10 +217,10 @@ resources:
             KeySchema:
               - AttributeName: userId
                 KeyType: HASH
-              - AttributeName: userId
+              - AttributeName: createdAt
                 KeyType: RANGE
             Projection:
-              ProjecttionType: ALL
+              ProjectionType: ALL
 
     AttachmentsBucket:
       Type: AWS::S3::Bucket
@@ -226,9 +228,11 @@ resources:
         BucketName: ${self:provider.environment.UPLOAD_S3_BUCKET}
         CorsConfiguration:
           CorsRules:
-            - AllowedOrigins: '*'
-            - AllowedHeaders: '*'
-            - AllowedMethods:
+            - AllowedOrigins: 
+                - '*'
+              AllowedHeaders: 
+                - '*'
+              AllowedMethods:
                 - GET
                 - PUT
                 - POST
