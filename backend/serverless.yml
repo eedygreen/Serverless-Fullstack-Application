@@ -6,6 +6,7 @@ plugins:
   - serverless-aws-documentation
   - serverless-iam-roles-per-function
   - serverless-reqvalidator-plugin
+  - serverless-plugin-tracing
 
 package:
   individually: true
@@ -72,13 +73,14 @@ functions:
           path: todos
           authorizer: Auth
           cors: true
+          reqValidatorName: 'RequestBodyValidator'
     iamRoleStatementsInherit: true
-    #iamRoleStatementsName: ${self:service.name}-GetTodItem-${self:provider.stage}
+    iamRoleStatementsName: ${self:service.name}-GetTodItem-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:Query
-        Resources: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}/index/${self:provider.environment.INDEX_NAME}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}/index/${self:provider.environment.INDEX_NAME}
 
   # TODO: Configure this function
   CreateTodo:
@@ -89,15 +91,13 @@ functions:
           path: todos
           authorizer: Auth
           cors: true
-          reqValidatorName: RequestBodyValidator
-          documentation:
-            summary: Create New Tod Item
-            description: Creating a new Todo Item
-            requestModels:
+          reqValidatorName: 'RequestBodyValidator'
+          request:
+            schema:
               'application/json': CreateTodo
     iamRoleStatementsInherit: true
-   # iamRoleStatementsName: ${self:service.name}-CreateTodo-Role-${self.provider.stage}
-    iamRolestatements:
+    iamRoleStatementsName: ${self:service.name}-CreateTodo-Role-${self.provider.stage}
+    iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
@@ -113,16 +113,14 @@ functions:
       - http:
           method: patch
           path: todos/{todoId}
-          authorzer: Auth
+          authorizer: Auth
           cors: true
-          reqValidation: RequestBodyValidator
-          documentation:
-            summary: Update New Todo Item
-            description: Updating a New Todo Item
-            requestModels:
+          reqValidatorName: 'RequestBodyValidator'
+          request:
+            schema:
               'application/json': UpdateTodo
     iamRoleStatementsInherit: true
-   # iamRoleStatementsName: ${self:service.name}-UpdateTodoItem-${self:provider.stage}
+    iamRoleStatementsName: ${self:service.name}-UpdateTodoItem-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -139,8 +137,9 @@ functions:
           path: todos/{todoId}
           authorizer: Auth
           cors: true
-    iamRoleStatementsInherit: tue
-   # iamRoleStatementsName: ${self:service.name}-DeleteTodItem-${self:provider.stage}
+          reqValidatorName: 'RequestBodyValidator'
+    iamRoleStatementsInherit: true
+    iamRoleStatementsName: ${self:service.name}-DeleteTodItem-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -158,11 +157,12 @@ functions:
           path: todos/{todoId}/attachment
           authorizer: Auth
           cors: true
+          reqValidatorName: 'RequestBodyValidator'
     iamRoleStatementsInherit: true
-  #  iamRoleStatementsName: ${self:service.name}-GenerateUploadUrl-${self:provider.stage}
+    iamRoleStatementsName: ${self:service.name}-GenerateUploadUrl-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
-        Allow:
+        Action:
           - dynamodb:UpdateItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
       - Effect: Allow
@@ -190,6 +190,8 @@ resources:
         ResponseType: DEFAULT_4XX
         RestApiId:
           Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
       
     TodoTable:
       Type: AWS::ADynamoDB::Table
@@ -217,29 +219,6 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjecttionType: ALL
-
-    # GetTablePolicyRole:
-    #   Type: AWS::IAM:Role
-    #   Properties:
-    #     Path:
-    #     RoleName: GetTablePolicyRole
-    #     AssumeRolePolicyDocument:
-    #       Version: '2012-10-17'
-    #       Statement:
-    #         - Effect: Allow
-    #           Principal:
-    #             Service:
-    #              - lambda.amazonaws.com
-    #           Action: sts.AssumeRole
-    #       Policies:
-    #        - PolicyName: GetPolicyName
-    #          PolicyDocument:
-    #            Version: '2012-10-17'
-    #            Statement:
-    #             - Effect: Allow
-    #               Action:
-    #                 - dynamodb:Query
-    #               Resources: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}/index/${self:provider.environment.INDEX_NAME}
 
     AttachmentsBucket:
       Type: AWS::S3::Bucket
