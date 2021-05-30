@@ -29,14 +29,13 @@ provider:
     lambda: true
     apiGateway: true
 
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Action:
-            - 'xray:PutTraceSegments'
-            - 'xray:PutTelemetryRecords'
-          Resource: '*'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - 'xray:PutTraceSegments'
+        - 'xray:PutTelemetryRecords'
+      Resource: '*'
+
 custom:
   webpack:
     webpackConfig: ./webpack.config.js
@@ -53,10 +52,10 @@ custom:
         title: ToDo-API
         description: serverless application
     models:
-      - name: CreateTodo
+      - name: createTodo
         contentType: application/json
         schema: ${file(./src/validation/schema-create.json)}
-      - name: UpdateTodo
+      - name: updateTodo
         contentType: application/json
         schema: ${file(./src/validation/schema-update.json)}
 
@@ -65,6 +64,7 @@ functions:
 
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
+    tracing: true
 
   # TODO: Configure this function
   GetTodos:
@@ -76,8 +76,9 @@ functions:
           authorizer: Auth
           cors: true
           reqValidatorName: 'RequestBodyValidator'
+    tracing: true
     iamRoleStatementsInherit: true
-    iamRoleStatementsName: ${self:service.name}-GetTodItem-${self:provider.stage}
+    iamRoleStatementsName: ${self:service.name}-get-${self:provider.region}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -94,11 +95,14 @@ functions:
           authorizer: Auth
           cors: true
           reqValidatorName: 'RequestBodyValidator'
-          request:
-            schema:
-              'application/json': CreateTodo
+          documentation:
+            summary: create a ToDo list
+            description: ucreate a ToDo list
+            requestModels:
+              'application/json': createTodo
+    tracing: true
     iamRoleStatementsInherit: true
-    iamRoleStatementsName: ${self:service.name}-CreateTodo-Role-${self.provider.stage}
+    iamRoleStatementsName: ${self:service.name}-create-${self:provider.region}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -118,11 +122,14 @@ functions:
           authorizer: Auth
           cors: true
           reqValidatorName: 'RequestBodyValidator'
-          request:
-            schema:
-              'application/json': UpdateTodo
+          documentation:
+            summary: update a ToDo list
+            description: update a ToDo list
+            requestModels:
+              'application/json': updateTodo
+    tracing: true
     iamRoleStatementsInherit: true
-    iamRoleStatementsName: ${self:service.name}-UpdateTodoItem-${self:provider.stage}
+    iamRoleStatementsName: ${self:service.name}-update-${self:provider.region}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -140,8 +147,9 @@ functions:
           authorizer: Auth
           cors: true
           reqValidatorName: 'RequestBodyValidator'
+    tracing: true
     iamRoleStatementsInherit: true
-    iamRoleStatementsName: ${self:service.name}-DeleteTodItem-${self:provider.stage}
+    iamRoleStatementsName: ${self:service.name}-delete-${self:provider.region}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -160,8 +168,9 @@ functions:
           authorizer: Auth
           cors: true
           reqValidatorName: 'RequestBodyValidator'
+    tracing: true
     iamRoleStatementsInherit: true
-    iamRoleStatementsName: ${self:service.name}-GenerateUploadUrl-${self:provider.stage}
+    iamRoleStatementsName: ${self:service.name}-generateurl-${self:provider.region}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -181,7 +190,10 @@ resources:
       Properties:
         Name: 'request-body-validator'
         RestApiId:
-          Ref: ApiGatewayRestApi
+          Ref: 'ApiGatewayRestApi'
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
+
     GatewayResponseDefault4XX:
       Type: AWS::ApiGateway::GatewayResponse
       Properties:
@@ -191,10 +203,8 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
         ResponseType: DEFAULT_4XX
         RestApiId:
-          Ref: ApiGatewayRestApi
-        ValidateRequestBody: true
-        ValidateRequestParameters: false
-      
+          Ref: 'ApiGatewayRestApi'
+
     TodoTable:
       Type: AWS::DynamoDB::Table
       Properties:
