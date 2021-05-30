@@ -3,6 +3,8 @@ import { TodoItem } from '../models/TodoItem'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 import * as AWSXRay from 'aws-xray-sdk'
 import * as AWS from 'aws-sdk'
+import { CreateTodoRequest } from '../requests/CreateTodoRequest'
+import * as uuid from 'uuid'
 
 
 const xray = AWSXRay.captureAWS(AWS)
@@ -25,8 +27,26 @@ async getTodo(userId: string): Promise<TodoItem[]> {
         }
     }).promise()
 
-    const do_items = result.Items
-    return do_items as TodoItem[]
+    return result.Items as TodoItem[]
+}
+
+async createTodo( request: CreateTodoRequest,userId: string): Promise<TodoItem>{
+    const new_id: string = uuid.v4()
+    let item:TodoItem
+    item.userId    = userId
+    item.todoId    = new_id
+    item.createdAt = new Date().toISOString()
+    item.name      = request.name
+    item.dueDate   = request.dueDate
+    item.done      = false
+    
+    await this.docClient.put({
+        TableName: this.todoTable,
+        Item: item
+
+    }).promise()
+
+    return item
 }
 
 async updateTodo(userId: string, todoId: string, updateTodo: UpdateTodoRequest){

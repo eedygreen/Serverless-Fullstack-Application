@@ -1,11 +1,11 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "update-todos",
+    "title": "update todos",
     "type": "object",
-     "minProperties": 1,
     "properties": {
       "name": {
-        "type": "string"
+        "type": "string",
+        "minLength": 3
       },
       "dueDate":{
         "type": "string"
@@ -19,5 +19,11 @@
       "dueDate",
       "done"
     ],
-    "additionalProperties": false
+    "additionalProperties": {
+      "properties":{
+          "attachmentUrl":{
+              "type":"string"
+          }
+      }
+  }
   }
