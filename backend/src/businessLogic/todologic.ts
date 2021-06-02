@@ -2,7 +2,17 @@ import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 import { TodoItem } from '../models/TodoItem'
 import { Todo } from '../dataLayer/todo'
 
+
 const todoAccess = new Todo()
+
+export async function createTodo(
+    userId,
+    todoId
+    ){
+    return await todoAccess.createTodo(
+        userId,
+        todoId)
+}
 
 export async function getTodo(userId: string): Promise<TodoItem[]> {
     return await todoAccess.getTodo(userId)

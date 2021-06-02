@@ -7,6 +7,7 @@ plugins:
   - serverless-iam-roles-per-function
   - serverless-reqvalidator-plugin
   - serverless-plugin-tracing
+  - serverless-websockets-plugin
 
 package:
   individually: true
@@ -14,6 +15,9 @@ package:
 provider:
   name: aws
   runtime: nodejs12.x
+  logs:
+    websocket: true
+    
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
@@ -73,7 +77,9 @@ functions:
       - http:
           method: get
           path: todos
-          authorizer: Auth
+          websocket:
+            route: $connect
+            authorizer: Auth
           cors: true
           reqValidatorName: 'RequestBodyValidator'
     tracing: true
@@ -92,7 +98,9 @@ functions:
       - http:
           method: post
           path: todos
-          authorizer: Auth
+          websocket:
+            route: $connect
+            authorizer: Auth
           cors: true
           reqValidatorName: 'RequestBodyValidator'
           documentation:
@@ -119,7 +127,9 @@ functions:
       - http:
           method: patch
           path: todos/{todoId}
-          authorizer: Auth
+          websocket:
+            route: $connect
+            authorizer: Auth
           cors: true
           reqValidatorName: 'RequestBodyValidator'
           documentation:
@@ -144,7 +154,9 @@ functions:
       - http:
           method: delete
           path: todos/{todoId}
-          authorizer: Auth
+          websocket:
+            route: $connect
+            authorizer: Auth
           cors: true
           reqValidatorName: 'RequestBodyValidator'
     tracing: true
@@ -165,7 +177,9 @@ functions:
       - http:
           method: post
           path: todos/{todoId}/attachment
-          authorizer: Auth
+          websocket:
+            route: $connect
+            authorizer: Auth
           cors: true
           reqValidatorName: 'RequestBodyValidator'
     tracing: true
