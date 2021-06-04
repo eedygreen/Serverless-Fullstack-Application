@@ -6,6 +6,7 @@ import * as uuid from 'uuid'
 const AWSXRay = require('aws-xray-sdk')
 const xRay = AWSXRay.captureAWS(AWS)
 
+
 export class Todo {
     constructor(
         private readonly docClient: AWS.DynamoDB.DocumentClient = new xRay.DynamoDB.DocumentClient(),
@@ -27,7 +28,7 @@ async getTodo(userId: string): Promise<TodoItem[]> {
     return result.Items as TodoItem[]
 }
 
-async createTodo( request: CreateTodoRequest,userId: string): Promise<TodoItem>{
+async createTodo( request: CreateTodoRequest, userId: string): Promise<TodoItem>{
     const new_id: string = uuid.v4()
     let item:TodoItem
     item.userId    = userId

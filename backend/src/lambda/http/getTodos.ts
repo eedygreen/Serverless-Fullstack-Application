@@ -11,15 +11,27 @@ export const handler: APIGatewayProxyHandler = middy(async (event: APIGatewayPro
   const userId = getUserId(event)
   const result = await getTodo(userId)
     
-  return {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Orgin': '*'
+  try {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Orgin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
+      body: JSON.stringify({
+        "items": result
+      })
+    }
+  }
+  catch(e){
+    return {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
     },
-    body: JSON.stringify({
-      "items": result
-    })
-
+    body: JSON.stringify({e})   
+}
 }
 }).use(cors({
   credentials: true

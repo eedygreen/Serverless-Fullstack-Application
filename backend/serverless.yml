@@ -7,7 +7,6 @@ plugins:
   - serverless-iam-roles-per-function
   - serverless-reqvalidator-plugin
   - serverless-plugin-tracing
-  - serverless-websockets-plugin
 
 package:
   individually: true
@@ -77,11 +76,9 @@ functions:
       - http:
           method: get
           path: todos
-          websocket:
-            route: $connect
-            authorizer: Auth
           cors: true
-          reqValidatorName: 'RequestBodyValidator'
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
     tracing: true
     iamRoleStatementsInherit: true
     iamRoleStatementsName: ${self:service.name}-get-${self:provider.region}
@@ -89,7 +86,12 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:Query
+          - dynamodb:GetItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}/index/${self:provider.environment.INDEX_NAME}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
 
   # TODO: Configure this function
   CreateTodo:
@@ -98,11 +100,9 @@ functions:
       - http:
           method: post
           path: todos
-          websocket:
-            route: $connect
-            authorizer: Auth
           cors: true
-          reqValidatorName: 'RequestBodyValidator'
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
           documentation:
             summary: create a ToDo list
             description: ucreate a ToDo list
@@ -119,7 +119,6 @@ functions:
           - dynamodb:UpdateItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/{self:provider.environment.TODO_TABLE}
 
-
   # TODO: Configure this function
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
@@ -127,11 +126,9 @@ functions:
       - http:
           method: patch
           path: todos/{todoId}
-          websocket:
-            route: $connect
-            authorizer: Auth
           cors: true
-          reqValidatorName: 'RequestBodyValidator'
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
           documentation:
             summary: update a ToDo list
             description: update a ToDo list
@@ -154,11 +151,9 @@ functions:
       - http:
           method: delete
           path: todos/{todoId}
-          websocket:
-            route: $connect
-            authorizer: Auth
           cors: true
-          reqValidatorName: 'RequestBodyValidator'
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
     tracing: true
     iamRoleStatementsInherit: true
     iamRoleStatementsName: ${self:service.name}-delete-${self:provider.region}
@@ -168,7 +163,6 @@ functions:
           - dynamodb:DeleteItem
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
-     
 
   # TODO: Configure this function
   GenerateUploadUrl:
@@ -177,11 +171,9 @@ functions:
       - http:
           method: post
           path: todos/{todoId}/attachment
-          websocket:
-            route: $connect
-            authorizer: Auth
           cors: true
-          reqValidatorName: 'RequestBodyValidator'
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
     tracing: true
     iamRoleStatementsInherit: true
     iamRoleStatementsName: ${self:service.name}-generateurl-${self:provider.region}
@@ -213,7 +205,7 @@ resources:
       Properties:
         ResponseParameters:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization'"
           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
         ResponseType: DEFAULT_4XX
         RestApiId:

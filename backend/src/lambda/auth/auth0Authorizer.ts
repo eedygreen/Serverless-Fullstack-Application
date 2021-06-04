@@ -1,5 +1,6 @@
 import { CustomAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
 import 'source-map-support/register'
+import * as middy from 'middy'
 
 import { verify, decode } from 'jsonwebtoken'
 import { createLogger } from '../../utils/logger'
@@ -14,12 +15,12 @@ const logger = createLogger('auth')
 // To get this URL you need to go to an Auth0 page -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
 const jwksUrl = 'https://dev-5vkq1v8v.eu.auth0.com/.well-known/jwks.json'
 
-export const handler = async (
+export const handler = middy(async (
   event: CustomAuthorizerEvent
 ): Promise<CustomAuthorizerResult> => {
   logger.info('Authorizing a user', event.authorizationToken)
+  const jwtToken = await verifyToken(event.authorizationToken)
   try {
-    const jwtToken = await verifyToken(event.authorizationToken)
     logger.info('User was authorized', jwtToken)
 
     return {
@@ -39,7 +40,7 @@ export const handler = async (
     logger.error('User not authorized', { error: e.message })
     
     return {
-      principalId: 'user',
+      principalId: 'apigateway.amazonaws.com',
       policyDocument: {
         Version: '2012-10-17',
         Statement: [
@@ -53,28 +54,42 @@ export const handler = async (
     }
   }
 }
-
+)
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
   const token = getToken(authHeader)
   const jwt: Jwt = decode(token, { complete: true }) as Jwt
+  const jwk = jwt.header.kid
+  let crt: string | Buffer
   // TODO: Implement token verification
   // You should implement it similarly to how it was implemented for the exercise for the lesson 5
   // You can read more about how to do this here: https://auth0.com/blog/navigating-rs256-and-jwks/
   
-  if(!jwt){
-    throw new Error('Invalid Token')
-  }
+  // if(!jwt){
+  //   throw new Error('Invalid Token')
+  // }
 
+  // try {
+  //   const res = await Axios.get(jwksUrl)
+  //   const verification = verify(token, res.data,{algorithms:['RS256']})
+  //   return verification as JwtPayload
+  // }
   try {
     const res = await Axios.get(jwksUrl)
-    const verification = verify(token, res.data,{algorithms:['RS256']})
-    return verification as JwtPayload
+    const signKey = res.data.keys.filter(k=> k.kid === jwk)[0]
+
+    if (!signKey){
+      throw new Error(`'${signKey}' is invalid!`)
+    }
+    const { x5c } = signKey
+    crt = `-----BEGIN CERTIFICATE-----\n${x5c[0]}\n-----END CERTIFICATE-----`
   }
 
   catch (error)
   {
-  return error();
+  return error;
+  ;
   }
+  return verify(token, crt, { algorithms: ['RS256'] }) as JwtPayload
 }
 
 function getToken(authHeader: string): string {
@@ -88,3 +103,4 @@ function getToken(authHeader: string): string {
 
   return token
 }
+
